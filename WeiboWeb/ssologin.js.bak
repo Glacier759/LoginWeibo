@@ -1,0 +1,218 @@
+var sinaSSOEncoder = sinaSSOEncoder || {};
+(function() {
+    var i = 0;
+    var g = 8;
+    this.hex_sha1 = function(j) {
+        return h(b(f(j), j.length * g))
+    };
+    var b = function(A, r) {
+            A[r >> 5] |= 128 << (24 - r % 32);
+            A[((r + 64 >> 9) << 4) + 15] = r;
+            var B = Array(80);
+            var z = 1732584193;
+            var y = -271733879;
+            var v = -1732584194;
+            var u = 271733878;
+            var s = -1009589776;
+            for (var o = 0; o < A.length; o += 16) {
+                var q = z;
+                var p = y;
+                var n = v;
+                var m = u;
+                var k = s;
+                for (var l = 0; l < 80; l++) {
+                    if (l < 16) {
+                        B[l] = A[o + l]
+                    } else {
+                        B[l] = d(B[l - 3] ^ B[l - 8] ^ B[l - 14] ^ B[l - 16], 1)
+                    }
+                    var C = e(e(d(z, 5), a(l, y, v, u)), e(e(s, B[l]), c(l)));
+                    s = u;
+                    u = v;
+                    v = d(y, 30);
+                    y = z;
+                    z = C
+                }
+                z = e(z, q);
+                y = e(y, p);
+                v = e(v, n);
+                u = e(u, m);
+                s = e(s, k)
+            }
+            return Array(z, y, v, u, s)
+        };
+    var a = function(k, j, m, l) {
+            if (k < 20) {
+                return (j & m) | ((~j) & l)
+            }
+            if (k < 40) {
+                return j ^ m ^ l
+            }
+            if (k < 60) {
+                return (j & m) | (j & l) | (m & l)
+            }
+            return j ^ m ^ l
+        };
+    var c = function(j) {
+            return (j < 20) ? 1518500249 : (j < 40) ? 1859775393 : (j < 60) ? -1894007588 : -899497514
+        };
+    var e = function(j, m) {
+            var l = (j & 65535) + (m & 65535);
+            var k = (j >> 16) + (m >> 16) + (l >> 16);
+            return (k << 16) | (l & 65535)
+        };
+    var d = function(j, k) {
+            return (j << k) | (j >>> (32 - k))
+        };
+    var f = function(m) {
+            var l = Array();
+            var j = (1 << g) - 1;
+            for (var k = 0; k < m.length * g; k += g) {
+                l[k >> 5] |= (m.charCodeAt(k / g) & j) << (24 - k % 32)
+            }
+            return l
+        };
+    var h = function(l) {
+            var k = i ? "0123456789ABCDEF" : "0123456789abcdef";
+            var m = "";
+            for (var j = 0; j < l.length * 4; j++) {
+                m += k.charAt((l[j >> 2] >> ((3 - j % 4) * 8 + 4)) & 15) + k.charAt((l[j >> 2] >> ((3 - j % 4) * 8)) & 15)
+            }
+            return m
+        };
+    this.base64 = {
+        encode: function(l) {
+            l = "" + l;
+            if (l == "") {
+                return ""
+            }
+            var j = "";
+            var s, q, o = "";
+            var r, p, n, m = "";
+            var k = 0;
+            do {
+                s = l.charCodeAt(k++);
+                q = l.charCodeAt(k++);
+                o = l.charCodeAt(k++);
+                r = s >> 2;
+                p = ((s & 3) << 4) | (q >> 4);
+                n = ((q & 15) << 2) | (o >> 6);
+                m = o & 63;
+                if (isNaN(q)) {
+                    n = m = 64
+                } else {
+                    if (isNaN(o)) {
+                        m = 64
+                    }
+                }
+                j = j + this._keys.charAt(r) + this._keys.charAt(p) + this._keys.charAt(n) + this._keys.charAt(m);
+                s = q = o = "";
+                r = p = n = m = ""
+            } while (k < l.length);
+            return j
+        },
+        decode: function(s, p, l) {
+            var r = function(j, C) {
+                    for (var B = 0; B < j.length; B++) {
+                        if (j[B] === C) {
+                            return B
+                        }
+                    }
+                    return -1
+                };
+            if (typeof(s) == "string") {
+                s = s.split("")
+            }
+            var m = [];
+            var A, y, v = "";
+            var z, x, u, t = "";
+            if (s.length % 4 != 0) {}
+            var k = /[^A-Za-z0-9\+\/\=]/g;
+            var w = this._keys.split("");
+            if (p == "urlsafe") {
+                k = /[^A-Za-z0-9\-_\=]/g;
+                w = this._keys_urlsafe.split("")
+            }
+            var o = 0;
+            if (p == "binnary") {
+                w = [];
+                for (o = 0; o <= 64; o++) {
+                    w[o] = o + 128
+                }
+            }
+            if (p != "binnary" && k.exec(s.join(""))) {
+                return l == "array" ? [] : ""
+            }
+            o = 0;
+            do {
+                z = r(w, s[o++]);
+                x = r(w, s[o++]);
+                u = r(w, s[o++]);
+                t = r(w, s[o++]);
+                A = (z << 2) | (x >> 4);
+                y = ((x & 15) << 4) | (u >> 2);
+                v = ((u & 3) << 6) | t;
+                m.push(A);
+                if (u != 64 && u != -1) {
+                    m.push(y)
+                }
+                if (t != 64 && t != -1) {
+                    m.push(v)
+                }
+                A = y = v = "";
+                z = x = u = t = ""
+            } while (o < s.length);
+            if (l == "array") {
+                return m
+            }
+            var q = "",
+                n = 0;
+            for (; n < m.lenth; n++) {
+                q += String.fromCharCode(m[n])
+            }
+            return q
+        },
+        _keys: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
+        _keys_urlsafe: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_="
+    };
+    this.Cookie = {
+        decode: function(n) {
+            var p = function(q) {
+                    var r = "",
+                        s = 0;
+                    for (; s < q.length; s++) {
+                        r += "%" + l(q[s])
+                    }
+                    return decodeURIComponent(r)
+                };
+            var l = function(q) {
+                    var r = "0" + q.toString(16);
+                    return r.length <= 2 ? r : r.substr(1)
+                };
+            var m = [];
+            var k = n.substr(0, 3);
+            var j = n.substr(3);
+            switch (k) {
+            case "v01":
+                for (var o = 0; o < j.length; o += 2) {
+                    m.push(parseInt(j.substr(o, 2), 16))
+                }
+                return decodeURIComponent(p(sinaSSOEncoder.base64.decode(m, "binnary", "array")));
+                break;
+            case "v02":
+                m = sinaSSOEncoder.base64.decode(j, "urlsafe", "array");
+                return p(sinaSSOEncoder.base64.decode(m, "binnary", "array"));
+                break;
+            default:
+                return decodeURIComponent(n)
+            }
+        }
+    }
+}).call(sinaSSOEncoder);
+function getpass(pwd,servertime,nonce,rsaPubkey) {
+//	var RSAKey = new sinaSSOEncoder.RSAKey();
+//	RSAKey.setPublic(rsaPubkey, '10001');
+//	var password = RSAKey.encrypt([servertime, nonce].join("\t") + "\n" + pwd);
+	var password = sinaSSOEncoder.hex_sha1("" + sinaSSOEncoder.hex_sha1(sinaSSOEncoder.hex_sha1(pwd)) + servertime + nonce);
+	return password;
+}
